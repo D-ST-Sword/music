@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tarena.ht.mapper.UserMapper">
+	
+	<!-- 查询全部的用户信息 -->
+	<select id= "findAll" resultMap="userRM">
+		 select dept_p.dept_name,u.* from
+		    (select * from    
+		      user_p u
+		      left join
+		        (select p.user_info_id,p.name,p.card_no,p.join_date,p.salary,p.birthday,p.gender,p.station,p.telephone,p.user_level,p.remark,p.order_no,m.* from
+		          user_info_p p
+		               left join
+		          (select user_info_id m_id,name m_name from user_info_p ) m
+		                  on p.manager_id=m.m_id) info
+		      on u.user_id=info.user_info_id) u
+		         left join 
+		         dept_p
+		   on dept_p.dept_id=u.dept_id
+	</select>
+	
+	<!-- User对象的结果集封装 -->
+	<resultMap type="User" id="userRM" autoMapping="true">
+		<id column="user_id" property="userId" />
+		
+		<!-- 封装UserInfo属性 -->
+		<association property="userInfo" javaType = "UserInfo" >
+			<id column="user_info_id" property="userInfoId"/>
+		
+			<result column="name" property="name"/>
+			<result column="card_no" property = "cardNo"/>
+			<result column="join_date" property = "joinDate"/>
+			<result column="salary" property = "salary"/>
+			<result column="birthday" property = "birthday"/>
+			<result column="gender" property = "gender"/>
+			<result column="station" property = "station"/>
+			<result column="telephone" property = "telephone"/>
+			<result column="user_level" property = "userLevel"/>
+			<result column="remark" property = "remark"/>
+			<result column="order_no" property = "orderNo"/>
+			<association property="manager" javaType = "UserInfo">
+				<id column="m_id" property = "userInfoId"/>
+				<result column="m_name" property = "name"/>
+			</association>
+		</association>
+		
+		<!-- 封装Dept属性 -->
+		<association property="dept" javaType = "Dept">
+			<id column="dept_id" property="deptId"/>
+			<result column="dept_name" property="deptName"/>
+		</association>
+		
+	</resultMap>
+	
+	
+	<!-- 修改指定id的状态 -->
+	<update id="updateState">
+		update user_p set state = #{state} where user_id IN (
+		<foreach collection="userIds" item="id" separator=",">
+		#{id}
+		</foreach>
+		)
+	</update>
+	
+	<!-- 删除指定id的用户表 -->
+	<delete id="deleteUsers">
+		delete user_p where user_id in (
+		<foreach collection="array" item="id" separator=",">
+			#{id}
+		</foreach>
+		)
+	</delete>
+	<!-- 
+	private String userId;
+
+	private String username;
+	private String password;
+	private int state;
+	
+	private Dept dept;
+	private UserInfo userInfo;
+	 -->
+	<!-- 保存用户信息 -->
+	<insert id="saveUser">
+		insert into user_p values(
+			#{userId},
+			#{dept.deptId},
+			#{username},
+			#{password},
+			#{state},
+			#{createBy,jdbcType=VARCHAR},
+			#{createDept,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+		)	
+	</insert>
+	
+	<!-- 寻找指定id的用户 -->
+	<select id="findOne" resultMap = "userRM">
+		select dept_p.dept_name,u.* from
+		    (select * from    
+		      user_p u
+		      left join
+		        (select p.user_info_id,p.name,p.card_no,p.join_date,p.salary,p.birthday,p.gender,p.station,p.telephone,p.user_level,p.remark,p.order_no,m.* from
+		          user_info_p p
+		               left join
+		          (select user_info_id m_id,name m_name from user_info_p ) m
+		                  on p.manager_id=m.m_id) info
+		      on u.user_id=info.user_info_id) u
+		         left join 
+		         dept_p
+		   on dept_p.dept_id=u.dept_id
+		where user_id=#{userId}
+	</select>
+	
+	<!-- 更新指定id的用户数据 -->
+	<update  id = "updateUser">
+		update user_p 
+		<set>
+			<if test = "dept.deptId!=null">dept_id=#{dept.deptId},</if>
+			<if test = "username!=null">username=#{username},</if>
+			<if test = "password!=null">password=#{password},</if>
+			<if test = "state!=null">state=#{state},</if>
+			<if test="createBy!=null">create_by=#{createBy,jdbcType=VARCHAR},</if>
+			<if test="createDept!=null">create_dept=#{createDept,jdbcType=VARCHAR},</if>
+			<if test="createTime!=null">create_time=#{createTime,jdbcType=DATE},</if>
+			<if test="updateBy!=null">update_by=#{updateBy,jdbcType=VARCHAR},</if>
+			<if test="updateTime!=null">update_time=#{updateTime,jdbcType=DATE}</if>
+		</set>
+		where user_id = #{userId}
+	</update>
+	
+	<select id="findUserByUsername" resultMap="userRM">
+		select dept_p.dept_name,u.* from
+		    (select * from    
+		      user_p u
+		      left join
+		        (select p.user_info_id,p.name,p.card_no,p.join_date,p.salary,p.birthday,p.gender,p.station,p.telephone,p.user_level,p.remark,p.order_no,m.* from
+		          user_info_p p
+		               left join
+		          (select user_info_id m_id,name m_name from user_info_p ) m
+		                  on p.manager_id=m.m_id) info
+		      on u.user_id=info.user_info_id) u
+		         left join 
+		         dept_p
+		     on dept_p.dept_id=u.dept_id
+		where username = #{username}
+	</select>
+	
+	<select id="findPrivilegeList" resultType="string">
+		select name from module_p where module_id in
+       (select module_id from role_module_p where role_id in
+               (select role_id from role_user_p where user_id = #{userId}))
+	</select>
+	
+</mapper>

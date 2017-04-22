@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tarena.ht.mapper.UserInfoMapper">
+	<!-- 删除指定id的用户信息表 -->
+	<delete id="deleteUserInfos">
+		delete from user_info_p where user_info_id in(
+		<foreach collection="array" item="id" separator=",">
+			#{id}
+		</foreach>
+		)
+	</delete>
+	
+	<!-- 查找所有的userInfo信息 -->
+	<select id="findAllManager" resultType="UserInfo">
+		select user_info_id,name from user_info_p
+	</select>
+	<!-- 添加用户信息 -->
+	<!-- 
+	private UserInfo manager;
+	
+	private String userInfoId;
+	private String name;
+	private String cardNo;
+	private Date joinDate;
+	private BigDecimal salary;
+	private Date birthday;
+	private String gender;
+	private String station;
+	private String telephone;
+	private String userLevel;//4-普通用户3-部门经理2-副总1-总经理
+	private String remark;
+	private int orderNo;
+	 -->
+	<insert id="saveUserInfo">
+		insert into user_info_p values (
+			#{userInfoId},
+			#{name},
+			#{cardNo},
+			#{manager.userInfoId},
+			#{joinDate},
+			#{salary},
+			#{birthday},
+			#{gender},
+			#{station},
+			#{telephone},
+			#{userLevel},
+			#{remark},
+			#{orderNo},
+			#{createBy,jdbcType=VARCHAR},
+			#{createDept,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+		)
+	</insert>
+	
+	<!-- 更新用户信息表 -->
+	<update id = "updateUserInfo">
+		update user_info_p 
+		<set>
+			<if test="name!=null">name=#{name},</if>
+			<if test="cardNo!=null">card_no=#{cardNo},</if>
+			<if test="manager.userInfoId!=null">manager_id=#{manager.userInfoId},</if>
+			<if test="joinDate!=null">join_date=#{joinDate},</if>
+			<if test="salary!=null">salary=#{salary},</if>
+			<if test="birthday!=null">birthday=#{birthday},</if>
+			<if test="gender!=null">gender=#{gender},</if>
+			<if test="station!=null">station=#{station},</if>
+			<if test="telephone!=null">telephone=#{telephone},</if>
+			<if test="userLevel!=null">user_level=#{userLevel},</if>
+			<if test="remark!=null">remark=#{remark},</if>
+			<if test="orderNo!=null">order_no=#{orderNo},</if>
+			<if test="createBy!=null">create_by=#{createBy,jdbcType=VARCHAR},</if>
+			<if test="createDept!=null">create_dept=#{createDept,jdbcType=VARCHAR},</if>
+			<if test="createTime!=null">create_time=#{createTime,jdbcType=DATE},</if>
+			<if test="updateBy!=null">update_by=#{updateBy,jdbcType=VARCHAR},</if>
+			<if test="updateTime!=null">update_time=#{updateTime,jdbcType=DATE}</if>
+		</set>
+		where user_info_id = #{userInfoId}
+	</update>
+	
+	<!-- 寻找上级领导 -->
+	<select id = "findManager" resultType = "UserInfo">
+		select user_info_id,name from user_info_p where user_info_id not in #{userInfoId}
+	</select>
+</mapper>

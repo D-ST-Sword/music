@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tarena.ht.mapper.DeptMapper">
+
+	<!-- 查询部门列表信息 -->
+	<select id="findAll" resultMap = "deptMR">
+		 select * from 
+       		dept_p
+       		left join 
+		(select dept_p.dept_id p_id,dept_p.dept_name p_name from dept_p ) p
+        on dept_p.parent_id=p.p_id
+        order by dept_p.dept_id
+			
+	</select>
+	
+	<resultMap type="Dept" id="deptMR" autoMapping="true">
+		<id column="dept_id" property="deptId"/>
+		<association property="parentDept" javaType="Dept">
+			<id column="p_id" property="deptId"/>
+			<result column="p_name" property="deptName"/>
+		</association>
+	</resultMap>
+	
+	<!-- 更新部门列表状态 -->
+	<update id="updateState" >
+		update dept_p set state = #{state} where dept_id IN 
+		<foreach collection="deptId" item="id" separator="," open="(" close=")">
+			#{id}
+		</foreach>
+	</update>
+	
+	<!-- 删除部门列表 -->
+	<delete id = "deleteDept">
+		delete  from dept_p where dept_id IN
+		<foreach collection="deptId" item="id" separator="," open="(" close=")">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<!-- 查找部门所有的上级部门ID -->
+	<select id="findAllPId" resultMap = "PdeptRM">
+		select dept_name,dept_id from dept_p
+	</select>
+	<resultMap type="Dept" id="PdeptRM">
+		<id column="dept_id" property="deptId"/>
+		<result column="dept_name" property="deptName"/>
+	</resultMap>
+	<!-- 添加部门 -->
+	<insert id="saveDept" >
+		insert into dept_p(dept_id,dept_name,parent_id,state,create_time) values
+		(#{deptId},#{deptName},#{parentDept.deptId},#{state},#{createTime})
+	</insert>
+	
+	<!-- 查询其中一个部门信息 -->
+	<select id="findOne" resultMap="deptMR">
+		 select * from 
+       		dept_p
+       		left join 
+		(select dept_id p_id,dept_name p_name from dept_p ) p
+        on dept_p.parent_id=p.p_id
+        where dept_id = #{deptId}
+	</select>
+	<!-- 查询一个除指定id之外的所有部门id和name -->
+	<select id="findPId" resultMap = "PdeptRM">
+		select dept_name,dept_id from dept_p where dept_id NOT IN (#{deptId})
+	</select>
+	
+	<update id="updateDept" >
+		update dept_p  
+		<set>
+			<if test = "parentDept.deptId!=null">parent_id = #{parentDept.deptId},</if>
+			<if test = "deptName!=null">dept_name = #{deptName},</if>
+			<if test = "updateTime!=null">update_time = #{updateTime}</if>	
+			<if test = "updateBy!=null">update_by=#{updateBy}</if>		
+		</set>
+		where dept_id = #{deptId}
+		
+	</update>
+	
+	
+</mapper>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tarena.ht.mapper.ModuleMapper">
+
+	<!-- 查询所有的Module -->
+	<select id="findAll" resultMap="ModuleRM">
+		select * from 
+       		module_p m
+       		left join 
+            	(select module_id p_id, name p_name from module_p) p
+			on m.parent_id=p.p_id
+		order by order_no
+	</select>
+	
+	<!-- 封装resultMap -->
+	<resultMap type="Module" id="ModuleRM" autoMapping="true">
+		<id column="module_id" property="moduleId"/>
+		<association property="parentModule" javaType="Module">
+			<id column = "p_id" property="moduleId"/>
+			<result column="p_name" property="name"/>
+		</association>
+	</resultMap>
+	
+	<update id="updateState">
+		update module_p set state = #{state} where module_id in (
+		<foreach collection="moduleIds" separator="," item="id">
+			#{id}
+		</foreach>
+		)
+	</update>
+	
+	<!-- 模块删除 -->
+	<delete id = "deleteModules" >
+		delete from  module_p where module_id in 
+		<foreach collection="array" separator="," open="(" close=")" item="id">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<!-- 查询指定对象 -->
+	<select id="findOne" resultMap = "ModuleRM">
+		select * from 
+       		module_p m
+       		left join 
+            	(select module_id p_id, name p_name from module_p) p
+			on m.parent_id=p.p_id
+		where module_id = #{moduleId}
+	</select>
+	
+	<!-- 保存模块对象 -->
+	<insert id="saveModule">
+		<!-- 
+		private String moduleId;
+	private Module parentModule; //上级模块
+	private String name;
+	private Integer ctype;//1.主菜单,2.左侧菜单,3.按钮
+	private Integer state;
+	private Integer orderNo;
+	private String remark;
+		 -->
+		insert into module_p values(
+			#{moduleId},
+			#{parentModule.moduleId},
+			#{name},
+			#{ctype},
+			#{state},
+			#{orderNo},
+			#{remark},
+			#{createBy,jdbcType=VARCHAR},
+			#{createDept,jdbcType=VARCHAR},
+			#{createTime,jdbcType=DATE},
+			#{updateBy,jdbcType=VARCHAR},
+			#{updateTime,jdbcType=DATE}
+		)
+	</insert>
+	
+	<!-- 更新模块信息 -->
+	<update id="updateModule">
+		update module_p 
+		<set>
+			<if test="parentModule.moduleId!=null">parent_id = #{parentModule.moduleId},</if>
+			<if test="name!=null">name = #{name},</if>
+			<if test="ctype!=null">ctype = #{ctype},</if>
+			<if test="state!=null">state = #{state},</if>
+			<if test="orderNo!=null">order_no = #{orderNo},</if>
+			<if test="remark!=null">remark = #{remark},</if>
+			<if test="createBy!=null">create_by = #{createBy,jdbcType=VARCHAR},</if>
+			<if test="createDept!=null">create_dept = #{createDept,jdbcType=VARCHAR},</if>
+			<if test="createTime!=null">create_time = #{createTime,jdbcType=DATE},</if>
+			<if test="updateBy!=null">update_by = #{updateBy,jdbcType=VARCHAR},</if>
+			<if test="updateTime!=null">update_time = #{updateTime,jdbcType=DATE}</if>
+		</set>
+		where module_id = #{moduleId}
+	</update>
+</mapper>
