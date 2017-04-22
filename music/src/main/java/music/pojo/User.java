@@ -1,12 +1,13 @@
 package music.pojo;
 
 import java.util.Date;
+import java.util.List;
 
 public class User extends BaseEntity {
 	
-	private String userId;
-	private String gradeId;
-	private String name;
+	private String userId;//用户名
+	private String gradeId;//用户等级
+	private String name;//用户名
 	private String password;
 	private String userImg;
 	private String gender;

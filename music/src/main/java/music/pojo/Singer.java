@@ -1,5 +1,7 @@
 package music.pojo;
 
+import java.util.List;
+
 public class Singer extends BaseEntity {
 
 	private String singerId;

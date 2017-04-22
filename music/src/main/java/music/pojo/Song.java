@@ -1,13 +1,17 @@
 package music.pojo;
 
+import java.util.List;
+
 public class Song extends BaseEntity {
 	
 	private String songId;
 	private String name;
 	private String classId;
+
 	private String singerId;
 	private String songSrc;
 	private String songImg;
+	
 	public String getSongId() {
 		return songId;
 	}
